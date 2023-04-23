@@ -4,9 +4,11 @@ var port = process.env.PORT || 8080;
 
 // create middleware
 
-appServer.ProtectedRoute.use( (req, res, next)=>{
-    res.send("Hello World!");
-})
+appServer.ProtectedRoute.use(function(req, res, next) {
+  next();
+});
+
+require('./routes/routes')(appServer.ProtectedRoute,appServer.app);
 
 // listen port  
 appServer.app.listen(port, () => {
