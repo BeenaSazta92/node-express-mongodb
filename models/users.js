@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 require("dotenv").config();
+var jwt = require('jsonwebtoken');
 
 const UsersSchema = mongoose.Schema({
     //_id: false ,// if you da not want _id in your collection
@@ -37,6 +38,10 @@ UsersSchema.methods.comparePassword = function (updateuser, passw,user,callback)
         }else{   
             if(updateuser == 'false'){
                 if(isMatch == true){
+                    console.log("id ============",user._id.toString())
+                    var token = await generateToken(user._id.toString());
+                    callback(null, token);              
+                }else{
                     callback(null, isMatch); 
                 }
             }else{
@@ -45,5 +50,14 @@ UsersSchema.methods.comparePassword = function (updateuser, passw,user,callback)
         }        
     });
 };
+
+function generateToken(id){
+    console.log("token id " , id)
+    // var access_token = jwt.sign({id:data}, process.env.SECRET, {
+    //     expiresIn : '2m'//86400000 // 24 hours
+    // });
+    return jwt.sign( { userId: id }, process.env.SECRET, { expiresIn: "2m" });
+    //return access_token;
+}
 
 module.exports = mongoose.model('Users', UsersSchema);

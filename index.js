@@ -2,12 +2,7 @@ require("dotenv").config();
 var appServer = require('./app');
 var port = process.env.PORT || 8080;
 
-// create middleware
-
-appServer.ProtectedRoute.use(function(req, res, next) {
-  next();
-});
-
+appServer.ProtectedRoute.use(appServer.auth);
 require('./routes/routes')(appServer.ProtectedRoute,appServer.app);
 
 // listen port  

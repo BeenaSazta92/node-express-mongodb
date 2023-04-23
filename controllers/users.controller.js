@@ -3,53 +3,46 @@ const Users = require('../models/users.js');
 exports.userLogin = async (req, res) => {
   console.log("inside user login")
     if(req.body.username != undefined  && req.body.password != undefined){
-        var username = req.body.username;
-        var password = req.body.password;
-
-        var select ={
-            username :1,
-            email : 1,
-            password : 1
-        };
+     
+      var select ={
+        username :1,
+        email : 1,
+        password :1
+      };
     
-      await Users.findOne({username: username}).then(async user =>{
+      await Users.findOne({username: req.body.username}).select(select).then(async user =>{
         if(!user) {
-            res.status(404).send({
-                message: "User "+req.body.username+" not found"
-            });            
+          res.status(404).send({
+            message: "User " +req.body.username+ " not found"
+          });            
         }else{ 
-          this.validatePassword(res,user,password);
-      }
-      }).catch(err => {
-        if(err.kind === 'ObjectId') {
-            res.status(404).send({
-                message: "User "+username+" not found"
-            });                
+          this.validatePassword(res,user,req.body.password);
         }
+      }).catch(err => {
         res.status(500).send({
-            message: "Error retrieving in user finding " + username
+          message: "Error while retrieving user " + req.body.username
         });
       });
     }
-    
 }
 
-exports.validatePassword = async(res,user,password,type) => {
-   user.comparePassword('false',password,user,function (err, isMatch) {
-      if(isMatch && !err) { 
-        var result = {
-          'response_code':200,
-          'message':'Logged In Successfully',
-          'user_details':{
-            'email': user.email,
-            'username' : user.username,
-          }
-        };
-        res.send(result);         
-        }else{
-            return res.status(401).send({success: false, message: 'Authentication failed. Wrong password.'});
-        }
-    });
+exports.validatePassword = async(res,user,password) => {
+  user.comparePassword('false',password,user,function (err, token) {
+    if(token && !err) { 
+      var result = {
+      'response_code':200,
+      'message':'Logged In Successfully',
+      'user_details':{
+        'email': user.email,
+        'username' : user.username,
+        'access_token' : token,
+      }
+    };
+    res.send(result);         
+    }else{
+      return res.status(401).send({message: 'Authentication failed. Wrong password.'});
+    }
+  });
 }
 
 exports.userSignup = async (req, res) => {
@@ -100,24 +93,29 @@ exports.userSignup = async (req, res) => {
 };
 
 exports.getUser =  async (req, res) => { 
-  Users.findOne({username:req.params.username})
+  var select ={
+    username :1,
+    email : 1,
+  };
+  Users.findOne({username:req.params.username}).select(select)
   .then(data => {
     if(!data) {
       return res.status(404).send({
-          message: "User " + req.params.username + "does not exist"
+        message: "User " + req.params.username + "does not exist"
       });            
     }
     res.send({'response_code':200, data:data});
   }).catch(err => {
     console.log("error type ====", err.kind);
     if(err.kind === 'ObjectId' ) {
-        return res.status(404).send({
-          message: "User " + req.params.username + "does not exist"
-        });                
+      return res.status(404).send({
+        message: "User " + req.params.username + "does not exist"
+      });                
     }
     return res.status(500).send({
-        message: "Error while retrieving user "
+      message: "Error while retrieving user "
     });
   });  
 };
+
 

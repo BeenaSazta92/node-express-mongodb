@@ -1,3 +1,3 @@
 module.exports = (ProtectedRoute,app) => {
-	require('./user')(app);
+	require('./user')(ProtectedRoute,app);
 }
