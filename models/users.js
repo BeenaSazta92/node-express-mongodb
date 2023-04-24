@@ -52,12 +52,7 @@ UsersSchema.methods.comparePassword = function (updateuser, passw,user,callback)
 };
 
 function generateToken(id){
-    console.log("token id " , id)
-    // var access_token = jwt.sign({id:data}, process.env.SECRET, {
-    //     expiresIn : '2m'//86400000 // 24 hours
-    // });
-    return jwt.sign( { userId: id }, process.env.SECRET, { expiresIn: "2m" });
-    //return access_token;
+    return jwt.sign( { userId: id }, process.env.SECRET, { expiresIn: "2h" });
 }
 
 module.exports = mongoose.model('Users', UsersSchema);

@@ -1,7 +1,7 @@
 const Users = require('../models/users.js');
 
 exports.userLogin = async (req, res) => {
-  console.log("inside user login")
+  console.log("inside user login", req.body)
     if(req.body.username != undefined  && req.body.password != undefined){
      
       var select ={
@@ -92,7 +92,7 @@ exports.userSignup = async (req, res) => {
   }
 };
 
-exports.getUser =  async (req, res) => { 
+exports.getUserByName =  async (req, res) => { 
   var select ={
     username :1,
     email : 1,
@@ -117,5 +117,42 @@ exports.getUser =  async (req, res) => {
     });
   });  
 };
+
+exports.deleteUserByUsername = async (req, res) => { 
+  await Users.findOneAndRemove({username : req.params.username})
+  .then(user => { 
+    if(!user) {
+      return res.status(404).send({
+        message: "User doesn't exist"
+      });
+    }
+    res.send({'response_code':200,message: "User " +req.params.username+ " deleted successfully!"});
+  }).catch(err => {
+    return res.status(500).send({
+      message: "Could not delete user " + req.params.username});
+  });
+}
+
+/******This method can be used for both patch and put******** */
+
+exports.updateUser = async (req ,res)=>{
+  console.log(req.params.username, req.body)
+  if(req.params.username && req.body){
+    const filter = { username: req.params.username };
+    const update = req.body;
+    await Users.findOneAndUpdate(filter,update,{new :true}).then(user =>{
+      if(!user){
+        return res.status(404).send({ message :" User " + req.params.username+ " not found"})
+      }
+      res.send({message : "updated successfully", data : user})
+    }).catch(err =>{
+      console.log("Error while updating user" , err);
+      res.send({message : "Error while updating user"})
+    });
+  }
+  else{
+    res.status(500).send({ message :"No data given for update!"})
+  }
+}
 
 
